@@ -1,0 +1,22 @@
+Human-Readable Summary of the PolyForm Small Business License 1.0.0 (SBL)
+The PolyForm Small Business License (SBL) 1.0.0 allows small businesses and individuals to use your software for free, but larger businesses must pay for a separate license. Here’s what it means in simple terms:
+
+✅ You Can:
+✔ Use the software for free if your business makes less than $1 million per year.
+✔ Modify the software for personal or small business use.
+✔ Share the software with others, as long as they also follow this license.
+
+🚫 You Cannot:
+❌ Use it for free if your business makes $1 million or more per year—you must buy a separate license from the creator.
+❌ Sell the software or use it as part of a paid product without permission.
+❌ Remove or change the license terms when distributing the software.
+
+⚠ Important Notes:
+There are no warranties or guarantees—you use this software at your own risk.
+If your business grows and earns $1 million or more, you must stop using it for free and get a commercial license.
+You can contact the creator for licensing options if you need commercial use.
+
+Example Scenario:
+Jane, a freelancer: ✅ Can use the software for free.
+Bob's Bakery (small business earning $500k/year): ✅ Can use the software for free.
+TechCorp Inc. (earns $5M/year): ❌ Cannot use it for free—must buy a commercial license.
