@@ -147,11 +147,11 @@ class AudioConverter:
             raise ValueError(f"Unsupported target data type: {self.target_dtype}")
 
 
-"""example use"""
+# example use
+
 # converter = AudioConverter(target_samplerate=44100, target_channels=2, target_dtype=np.float32)
 # for chunk in converter.load_and_convert_wav("dataset/speaker2/odd1out_s2.wav"):
 #     print(chunk.dtype)  # Output: float32
-
 
 
 
@@ -162,15 +162,8 @@ EOF Error: This error occurs when the input file is empty
 
 """
 
-# TODO Auto init record and play and acess thrpough @ property
-# TODO add a method to change input/ output device
-# TODO fix  converter = AudioConverter(target_samplerate=48000, target_channels=2, target_dtype=np.float32) 
-# ^ to use play properties without errors
 
 class audio_handler:
-
-    def __init__(self):
-        None
 
     class record:
         def __init__(self):
@@ -180,7 +173,7 @@ class audio_handler:
             #================================================================
 
             self.sample_rate = self.detect_sample_rate()
-            self.channels = len([_ for _ in sd.default.channels]) # get the number of channels based on the data format
+            self.channels = len([_ for _ in sd.default.channels])
             self.depth = 0
 
             self.recording = False
@@ -200,9 +193,10 @@ class audio_handler:
             self.instant_stop = False
 
         def detect_sample_rate(self)-> int:
-            
-            # Detects the sample rate of the default input device.
-            
+
+            """
+            Detects the sample rate of the default input device.
+            """
 
             try:
                 # Get the default input device info
@@ -217,35 +211,30 @@ class audio_handler:
                 warnings.warn(f"Error detecting sample rate: {e}")
                 return 44100 # lowest typical sample rate of 44.1kh
 
-        def set_volume(self, volume:int)-> None:
-
-            # Set the volume multiplier.
-
+        def set_volume(self, volume):
+            """Set the volume multiplier."""
             if volume < 0:
                 warnings.warn("Volume must be non-negative!")
                 return
             self.volume = volume
 
-        def _callback(self, indata, frames, time, status)-> None:
-
-            # function that gets called for recording audio
-            
+        def _callback(self, indata, frames, time, status):
             if status:
                 warnings.warn(f"_callback Status: {status}")
             with self.audio_data_lock:
                 self.audio_data.append(indata.copy())
             
-            #save audio data after 10 chunks have been recorded for better performance
+            #save audio data after 10 chunks have been recorded
             if self.save_counter > self.save_period: 
                 self._save_audio_chunk()
                 self.save_counter = 0
 
             self.save_counter += 1
 
-        def start_recording(self)-> None:
+            print(" "*15, end="\r")
+            print(f"Recording: {self.save_counter}", end= "\r")
 
-            # Start recording audio. If already recording, warn and do nothing.
-
+        def start_recording(self):
             if self.recording:
                 warnings.warn("Already recording!")
                 return
@@ -259,19 +248,14 @@ class audio_handler:
             )
             self.stream.start()
 
-        def _temp_folder_cleanup(self)-> None:
-
-            # Cleanup temporary audio chunks folder, including the folder
-
+        def _temp_folder_cleanup(self):
             if not os.path.exists(self.TEMP_FOLDER):
                     warnings.warn("Temp folder does not exist or was not created")
 
             # Remove all temporary audio chunks from the temp folder.
             shutil.rmtree(self.TEMP_FOLDER)
 
-        def stop_recording(self)-> None:
-
-            # Stop recording audio. If not recording, do nothing.
+        def stop_recording(self):
             if not self.recording:
                 return
 
@@ -284,22 +268,20 @@ class audio_handler:
                 print("waiting for saving to finish...", end="\r")
             self._temp_folder_cleanup()
 
-        def save_recording(self, filename:str)-> None:
-            
-            """Save the stored audio to a WAV file"""
+        def save_recording(self, filename):
+            """Save the stored audio to a WAV file."""
 
             self.saving = True
             sample_width = None
-            
-            # test sample width based on first recorded chunk
+
             file = os.listdir(self.TEMP_FOLDER)[0]
             file_path = os.path.join(self.TEMP_FOLDER, file)
+
             with wave.open(file_path, "r") as f:
                 sample_width = f.getsampwidth()
 
-            # function to concatenate audio chunks into a single WAV file
+            # Open the output file for writing.
             def _concatenate_wav_files(num_channels, sample_rate, sample_width, input_files, output_file, max_files):
-                
                 """
                 Concatenates multiple WAV files into a single output file without loading them into memory.
 
@@ -342,9 +324,10 @@ class audio_handler:
                                         if not chunk:
                                             break
                                         wf.writeframes(chunk)
-                                
-                                num_files_appended += 1
+                                    
+                                    
 
+                                num_files_appended += 1
                             except Exception as e:
                                 warnings.warn(f"Error processing {input_file}: {e}")
                                 continue
@@ -356,21 +339,19 @@ class audio_handler:
                 finally:
                     self.saving = False
 
-            # create a thread to concatenate audio chunks into a single WAV file to avoid blocking the main thread
+
             thread = threading.Thread(target=_concatenate_wav_files, 
                                 args=(self.channels, 
                                 self.sample_rate, 
                                 sample_width, 
-                                [os.path.join(self.TEMP_FOLDER, _) for _ in os.listdir(self.TEMP_FOLDER)], 
+                                [self.TEMP_FOLDER + "/" + _ for _ in os.listdir(self.TEMP_FOLDER)], 
                                 filename, 
                                 self.number_of_chunks         )) 
             thread.start()
             self.threads.append(thread)
 
-        def _save_audio_chunk(self)->None:
-
+        def _save_audio_chunk(self):
             """Save the recorded audio to a WAV file as int16."""
-
             if not self.audio_data:
                 warnings.warn("No audio data to save! Note: this is from the _save_audio_chunk method.")
                 return
@@ -398,7 +379,7 @@ class audio_handler:
             OUTPUT_FORMAT = self.get_output_format()
             self.samplerate = OUTPUT_FORMAT["samplerate"]
             self.channels = channels
-
+            # len([_ for _ in sd.default.channels])
             self.blocksize = blocksize
             self.sample_width = OUTPUT_FORMAT["sample_width"]
 
@@ -413,10 +394,7 @@ class audio_handler:
             self.stop_playing_audio_event = threading.Event()
             self.underrun_count = 0
 
-            self.target_dtype = OUTPUT_FORMAT["dtype"]
-
         def get_output_format(self, device_id: int = None) -> dict:
-
             """
             Get the output format (frequency, sample width, and data type) of the specified audio device.
 
@@ -429,7 +407,6 @@ class audio_handler:
                     - 'width': The sample width in bytes.
                     - 'dtype': The numpy data type (e.g., np.int16, np.float32).
             """
-
             # Get device info
             device_info = sd.query_devices(device_id, 'output')
 
@@ -463,9 +440,9 @@ class audio_handler:
                 'channels': 2,
             }
 
-        def _load_wav_chunks(self, filename: str)-> None:
-            
-            # Thread-safe WAV file loader with chunked reading and auto conversion
+
+        def _load_wav_chunks(self, filename: str):
+            """Thread-safe WAV file loader with chunked reading and auto conversion"""
 
             converter = AudioConverter(target_samplerate=48000, target_channels=2, target_dtype=np.float32)
             try:
@@ -476,10 +453,8 @@ class audio_handler:
             except Exception as e:
                 warnings.warn(f"Error loading {filename}: {str(e)}", UserWarning)
 
-        def _audio_callback(self, outdata, frames, time, status)-> None:
-
-            # Sounddevice callback with underrun handling
-            
+        def _audio_callback(self, outdata, frames, time, status):
+            """SoundDevice callback with underrun handling"""
             if status:
                 if status.output_underflow:
                     self.underrun_count += 1
@@ -499,9 +474,8 @@ class audio_handler:
                 if self.stop_playing_audio_event.is_set():
                     raise sd.CallbackStop
 
-        def _load_files(self)-> None:
-
-            # Load WAV files from the file queue in a separate thread if not already loading
+        def _load_files(self):
+            """Load WAV files from the file queue in a separate thread if not already loading"""
             
             while not self.stop_playing_audio_event.is_set():
 
@@ -509,13 +483,11 @@ class audio_handler:
                     break
 
                 try:
-                    # get file from queue and load audio chunks
                     file = self.file_queue.get()
                     print(f"Loading file: {file}")
                     self._load_wav_chunks(file)
 
                 except queue.Empty:
-                    # do nothing in tha case the queue is empty
                     break
 
                 except Exception as e:
@@ -524,23 +496,17 @@ class audio_handler:
             return
 
 
-        def add_file(self, filename: str)-> None:
-
-            # Add a WAV file to the load file queue
-
-            # add to the load file queue
+        def add_file(self, filename: str):
+            """Add a WAV file to the load file queue"""
             self.file_queue.put(filename)
 
-            # start loading thread if not already started
             if not self.loading_thread:
                 loader = threading.Thread(target=self._load_files)
                 loader.start()
                 self.loading_thread = True
 
-        def play(self)-> None:
-
-            # Start audio playback
-
+        def play(self):
+            """Start audio playback"""
             if self.play_stream and self.play_stream.active:
                 return
 
@@ -554,9 +520,8 @@ class audio_handler:
             )
             self.play_stream.start()
 
-        def stop(self)-> None:
-
-            # Stop playback immediately
+        def stop(self):
+            """Stop playback immediately (thread-safe)"""
             self.stop_playing_audio_event.set()
             with self.play_queue_lock:
                 while not self.play_audio_queue.empty():
@@ -569,14 +534,39 @@ class audio_handler:
                 self.play_stream.close()
 
         def is_playing(self):
-            # Check if playback is active
+            """Check if playback is active"""
             return self.play_stream and self.play_stream.active
 
         def get_queue_size(self):
-            # Get remaining chunks in queue (thread-safe)
+            """Get remaining chunks in queue (thread-safe)"""
             with self.play_queue_lock:
                 return self.play_audio_queue.qsize()
 
+
+# # Example usage
+
+# if __name__ == "__main__":
+# 	# Example usage
+# 	player = audio_handler,()
+    
+# 	# Add files to play
+# 	player.add_file("dataset/speaker2/odd1out_s2.wav")
+# 	player.add_file("dataset/speaker2/odd1out_s2.wav")
+# 	player.add_file("dataset/speaker2/odd1out_s2.wav")
+    
+# 	# Start playback
+# 	player.play()
+
+# 	print("Playback started...")
+    
+# 	try:
+# 		while player.is_playing():
+# 			print(f"Queue size: {player.get_queue_size()} | Underruns: {player.underrun_count}", end='\r')
+# 			time.sleep(0.1)
+# 	except KeyboardInterrupt:
+# 		player.stop()
+# 		print("\nPlayback stopped by user")
+# 		exit(0)
 
 
 recorder = audio_handler.record()
