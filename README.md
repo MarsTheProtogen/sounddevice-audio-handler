@@ -4,10 +4,10 @@
 📌 This script provides functionality for **recording**, **playing**, and **processing** audio using the `sounddevice` and `librosa` libraries. It includes classes for handling **real-time audio input/output**, **audio conversion**, and **temporary file management**.
 
 ## 🚀 Why Use This Library?
-✅ **Real-time audio processing** with efficient recording & playback.
-✅ **Automatic sample rate detection** and volume control.
-✅ **Chunk-based audio storage** for optimized performance.
-✅ Ideal for **audio streaming applications, voice recorders, and audio processing tools**.
+✅ **Real-time audio processing** with efficient recording & playback. <br>
+✅ **Automatic sample rate detection** and volume control. <br>
+✅ **Chunk-based audio storage** for optimized performance. <br>
+✅ Ideal for **audio streaming applications, voice recorders, and audio processing tools**. <br>
 
 ---
 
@@ -123,3 +123,4 @@ test_parallel_audio()
 
 📝 **This documentation provides a comprehensive guide for using the `audio_handler.py` script effectively.** 🎼
 
+<br><br><br><br><br><br><br><br>
