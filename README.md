@@ -9,6 +9,14 @@
 ✅ **Chunk-based audio storage** for optimized performance. <br>
 ✅ Ideal for **audio streaming applications, voice recorders, and audio processing tools**. <br>
 
+# dependencies 
+requires `sounddevice
+numpy
+librosa
+scipy` <br>
+to install requiremants 
+`pip install -r PATH/TO/requrements.txt`
+
 ---
 
 # 📖 Documentation
