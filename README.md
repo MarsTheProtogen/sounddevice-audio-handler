@@ -1,5 +1,5 @@
 # NOTICE
-## THIS LIBRARY IS NOT REPLEASED YET 
+## THIS LIBRARY IS NOT RELEASED YET 
 
 
 # 🎵 Audio Handler Documentation 🎶
